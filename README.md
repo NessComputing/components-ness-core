@@ -17,7 +17,8 @@ Component Level
 
 *Foundation component*
 
+* Must never depend on any other likeness component.
 * Should minimize its dependency footprint.
 
 ----
-Copyright (C) 2011 Ness Computing, Inc.
+Copyright (C) 2012 Ness Computing, Inc.
