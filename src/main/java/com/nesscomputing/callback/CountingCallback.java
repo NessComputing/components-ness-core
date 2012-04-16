@@ -8,7 +8,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * A Callback that throws away all objects but counts them as it does so.
  */
 @ThreadSafe
-public class CountingCollector implements Callback<Object> {
+public class CountingCallback implements Callback<Object> {
 
     private final AtomicLong count = new AtomicLong();
 
