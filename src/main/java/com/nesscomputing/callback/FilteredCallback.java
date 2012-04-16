@@ -3,7 +3,7 @@ package com.nesscomputing.callback;
 import com.google.common.base.Predicate;
 
 /**
- * Simple callback that wraps another and only passes through items matching the given predicate
+ * Simple callback that wraps another and only passes through items matching the given predicate.
  */
 public class FilteredCallback<T> implements Callback<T> {
 
