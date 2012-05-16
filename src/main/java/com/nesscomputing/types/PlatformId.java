@@ -20,6 +20,7 @@ import java.nio.LongBuffer;
 import java.util.UUID;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,6 +29,7 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonValue;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 
 /**
  * Typed UUID which ensures you do not mix ids of one service with another.
@@ -46,6 +48,7 @@ public final class PlatformId<T>
 
     private static final Function<UUID, PlatformId<?>> FROM_UUID = new Function<UUID, PlatformId<?>>() {
         @Override
+        @CheckForNull
         public PlatformId<?> apply(@Nullable final UUID uuid)
         {
             return PlatformId.fromUuid(uuid);
@@ -54,6 +57,7 @@ public final class PlatformId<T>
 
     private static final Function<String, PlatformId<?>> FROM_STRING = new Function<String, PlatformId<?>>() {
         @Override
+        @CheckForNull
         public PlatformId<?> apply(@Nullable final String input)
         {
             return PlatformId.valueOf(input);
@@ -88,13 +92,14 @@ public final class PlatformId<T>
 
     private static final Function<byte[], PlatformId<?>> FROM_BYTES = new Function<byte[], PlatformId<?>>() {
         @Override
+        @CheckForNull
         public PlatformId<?> apply(@Nullable final byte[] input) {
             if (input != null) {
                 LongBuffer buffer = ByteBuffer.wrap(input).asLongBuffer();
                 return PlatformId.fromUuid(new UUID(buffer.get(), buffer.get()));
             }
             else {
-                return PlatformId.valueOf(null);
+                return null;
             }
         }
     };
@@ -131,23 +136,27 @@ public final class PlatformId<T>
 
 
     @JsonCreator
+    @CheckForNull
     public static <T> PlatformId<T> valueOf(@Nullable final String value)
     {
-        return new PlatformId<T>(value == null ? null : UUID.fromString(value));
+        return value == null ? null : new PlatformId<T>(UUID.fromString(value));
     }
 
+    @CheckForNull
     public static <T> PlatformId<T> fromUuid(@Nullable final UUID uuid)
     {
-        return new PlatformId<T>(uuid == null ? null : uuid);
+        return uuid == null ? null : new PlatformId<T>(uuid);
     }
 
     private final UUID uuid;
 
-    private PlatformId(@Nullable final UUID uuid)
+    private PlatformId(@Nonnull final UUID uuid)
     {
+        Preconditions.checkArgument(uuid != null, "uuid can not be null");
         this.uuid = uuid;
     }
 
+    @Nonnull
     public UUID getId()
     {
         return uuid;
@@ -156,7 +165,7 @@ public final class PlatformId<T>
     @JsonValue
     public String getValue()
     {
-        return uuid == null ? null : uuid.toString();
+        return uuid.toString();
     }
 
     @Override

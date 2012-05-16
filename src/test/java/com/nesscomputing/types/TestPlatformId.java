@@ -42,17 +42,7 @@ public class TestPlatformId
     @Test
     public void testNull()
     {
-        final UUID uuid = null;
-
-        final PlatformId<User> userId = PlatformId.fromUuid(uuid);
-        Assert.assertNotNull(userId);
-        Assert.assertNull(userId.getId());
-        Assert.assertNull(userId.getValue());
-        Assert.assertNotNull(userId.toString());
-
-        final PlatformId<User> userId2 = PlatformId.fromUuid(uuid);
-
-        Assert.assertEquals(userId, userId2);
+        Assert.assertNull(StringId.valueOf(null));
     }
 
     @Test
@@ -113,40 +103,37 @@ public class TestPlatformId
     @Test
     public void testBytesNull()
     {
-        final PlatformId<User> nullId = PlatformId.valueOf(null);
         final PlatformId<User> p1 = null;
         final Function<PlatformId<User>, byte[]> f1 = PlatformId.toBytesFunction();
         final Function<byte [], PlatformId<User>> f2 = PlatformId.fromBytesFunction();
         final byte [] value = f1.apply(p1);
         Assert.assertNull(value);
         final PlatformId<User> p2 = f2.apply(value);
-        Assert.assertEquals(nullId, p2);
+        Assert.assertNull(p2);
     }
 
     @Test
     public void testStringNull()
     {
-        final PlatformId<User> nullId = PlatformId.valueOf(null);
         final PlatformId<User> p1 = null;
         final Function<PlatformId<User>, String> f1 = PlatformId.toStringFunction();
         final Function<String, PlatformId<User>> f2 = PlatformId.fromStringFunction();
         final String value = f1.apply(p1);
         Assert.assertNull(value);
         final PlatformId<User> p2 = f2.apply(value);
-        Assert.assertEquals(nullId, p2);
+        Assert.assertNull(p2);
     }
 
     @Test
     public void testUUIDNull()
     {
-        final PlatformId<User> nullId = PlatformId.valueOf(null);
         final PlatformId<User> p1 = null;
         final Function<PlatformId<User>, UUID> f1 = PlatformId.toUuidFunction();
         final Function<UUID, PlatformId<User>> f2 = PlatformId.fromUuidFunction();
         final UUID value = f1.apply(p1);
         Assert.assertNull(value);
         final PlatformId<User> p2 = f2.apply(value);
-        Assert.assertEquals(nullId, p2);
+        Assert.assertNull(p2);
     }
 
 
