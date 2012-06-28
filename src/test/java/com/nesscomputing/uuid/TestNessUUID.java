@@ -23,6 +23,8 @@ import org.junit.Test;
 public class TestNessUUID {
     private final String uuid = "6f32f693-c7b5-11e1-afa7-88af2abc9a66";
     private final String caseSensitivity = "Dd000000-0000-0000-0000-000000000000";
+    private final String overflow = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF";
+    private final String zero = "00000000-0000-0000-0000-000000000000";
     private final String badLength = "00000000-f0000-0000-0000-000000000000";
     private final String hyphen1 = "00000000f0000-0000-0000-000000000000";
     private final String hyphen2 = "00000000-0000f0000-0000-000000000000";
@@ -40,6 +42,8 @@ public class TestNessUUID {
     {
         Assert.assertEquals(UUID.fromString(uuid), NessUUID.fromString(uuid));
         Assert.assertEquals(UUID.fromString(caseSensitivity), NessUUID.fromString(caseSensitivity));
+        Assert.assertEquals(UUID.fromString(overflow), NessUUID.fromString(overflow));
+        Assert.assertEquals(UUID.fromString(zero), NessUUID.fromString(zero));
     }
 
     @Test(expected=IllegalArgumentException.class)
