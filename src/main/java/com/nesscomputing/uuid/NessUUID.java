@@ -17,6 +17,19 @@ package com.nesscomputing.uuid;
 
 import java.util.UUID;
 
+
+/**
+ * A class that provides an alternate implementation of {@link
+ * java.util.UUID#fromString(String)}.
+ *
+ * <p> The version in the JDK uses {@link java.lang.String#split(String)}
+ * which does not compile the regular expression that is used for splitting
+ * the UUID string and results in the allocation of multiple strings in a
+ * string array. We decided to write {@link NessUUID} when we ran into
+ * performance issues with the garbage produced by {@link
+ * java.util.UUID#fromString(String)}.
+ *
+ */
 public class NessUUID {
     private NessUUID() {}
 
