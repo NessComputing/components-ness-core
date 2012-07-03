@@ -78,4 +78,164 @@ public class TestNessUUID {
         }
         Assert.fail(str);
     }
+
+    /*
+     * Add the luni tests from http://svn.apache.org/viewvc/harmony/enhanced/java/branches/java6/classlib/modules/luni/src/test/api/common/org/apache/harmony/luni/tests/java/util/UUIDTest.java?revision=929252
+     */
+
+    /**
+     * @see UUID#fromString(String)
+     */
+    @Test
+    public void test_fromString() {
+        UUID actual = NessUUID.fromString("f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
+        UUID expected = new UUID(0xf81d4fae7dec11d0L, 0xa76500a0c91e6bf6L);
+        Assert.assertEquals(expected, actual);
+
+        Assert.assertEquals(2, actual.variant());
+        Assert.assertEquals(1, actual.version());
+        Assert.assertEquals(130742845922168750L, actual.timestamp());
+        Assert.assertEquals(10085, actual.clockSequence());
+        Assert.assertEquals(690568981494L, actual.node());
+
+        actual = NessUUID.fromString("00000000-0000-1000-8000-000000000000");
+        expected = new UUID(0x0000000000001000L, 0x8000000000000000L);
+        Assert.assertEquals(expected, actual);
+
+        Assert.assertEquals(2, actual.variant());
+        Assert.assertEquals(1, actual.version());
+        Assert.assertEquals(0L, actual.timestamp());
+        Assert.assertEquals(0, actual.clockSequence());
+        Assert.assertEquals(0L, actual.node());
+
+        try {
+            NessUUID.fromString(null);
+            Assert.fail("No NPE");
+        } catch (NullPointerException e) {}
+
+        try {
+            NessUUID.fromString("");
+            Assert.fail("No IAE");
+        } catch (IllegalArgumentException e) {}
+
+        try {
+            NessUUID.fromString("f81d4fae_7dec-11d0-a765-00a0c91e6bf6");
+            Assert.fail("No IAE");
+        } catch (IllegalArgumentException e) {}
+
+        try {
+            NessUUID.fromString("f81d4fae-7dec_11d0-a765-00a0c91e6bf6");
+            Assert.fail("No IAE");
+        } catch (IllegalArgumentException e) {}
+
+        try {
+            NessUUID.fromString("f81d4fae-7dec-11d0_a765-00a0c91e6bf6");
+            Assert.fail("No IAE");
+        } catch (IllegalArgumentException e) {}
+
+        try {
+            NessUUID.fromString("f81d4fae-7dec-11d0-a765_00a0c91e6bf6");
+            Assert.fail("No IAE");
+        } catch (IllegalArgumentException e) {}
+    }
+
+	/**
+	 * @tests java.util.UUID#fromString(String)
+	 */
+    @Test
+	public void test_fromString_LString_Exception() {
+
+		UUID uuid = NessUUID.fromString("0-0-0-0-0");
+
+		try {
+			uuid = NessUUID.fromString("0-0-0-0-");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("-0-0-0-0-0");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("-0-0-0-0");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("-0-0-0-");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("0--0-0-0");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("0-0-0-0-");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("-1-0-0-0-0");
+			Assert.fail("should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected
+		}
+
+		uuid = NessUUID.fromString("123456789-0-0-0-0");
+		Assert.assertEquals(0x2345678900000000L, uuid.getMostSignificantBits());
+		Assert.assertEquals(0x0L, uuid.getLeastSignificantBits());
+
+		uuid = NessUUID.fromString("111123456789-0-0-0-0");
+		Assert.assertEquals(0x2345678900000000L, uuid.getMostSignificantBits());
+		Assert.assertEquals(0x0L, uuid.getLeastSignificantBits());
+
+		uuid = NessUUID.fromString("7fffffffffffffff-0-0-0-0");
+		Assert.assertEquals(0xffffffff00000000L, uuid.getMostSignificantBits());
+		Assert.assertEquals(0x0L, uuid.getLeastSignificantBits());
+
+		try {
+			uuid = NessUUID.fromString("8000000000000000-0-0-0-0");
+			Assert.fail("should throw NumberFormatException");
+		} catch (NumberFormatException e) {
+			// expected
+		}
+
+		uuid = UUID
+				.fromString("7fffffffffffffff-7fffffffffffffff-7fffffffffffffff-0-0");
+		Assert.assertEquals(0xffffffffffffffffL, uuid.getMostSignificantBits());
+		Assert.assertEquals(0x0L, uuid.getLeastSignificantBits());
+
+		uuid = NessUUID.fromString("0-0-0-7fffffffffffffff-7fffffffffffffff");
+		Assert.assertEquals(0x0L, uuid.getMostSignificantBits());
+		Assert.assertEquals(0xffffffffffffffffL, uuid.getLeastSignificantBits());
+
+		try {
+			uuid = NessUUID.fromString("0-0-0-8000000000000000-0");
+			Assert.fail("should throw NumberFormatException");
+		} catch (NumberFormatException e) {
+			// expected
+		}
+
+		try {
+			uuid = NessUUID.fromString("0-0-0-0-8000000000000000");
+			Assert.fail("should throw NumberFormatException");
+		} catch (NumberFormatException e) {
+			// expected
+		}
+	}
 }
