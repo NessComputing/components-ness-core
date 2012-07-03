@@ -33,16 +33,8 @@ import java.util.UUID;
 public class NessUUID {
     private NessUUID() {}
 
-    private static final byte[] CHAR_MAP = new byte[Character.MAX_VALUE];
-
-    static {
-        for (int i = 0; i < Character.MAX_VALUE; i++) {
-            CHAR_MAP[i] = -1;
-        }
-        initCharMap('a', 'f', 10);
-        initCharMap('A', 'F', 10);
-        initCharMap('0', '9', 0);
-    }
+    private static final int NUM_ALPHA_DIFF = 'A' - '9' - 1;
+    private static final int LOWER_UPPER_DIFF = 'a' - 'A';
 
     public static UUID fromString(String str) {
         int dashCount = 4;
@@ -84,22 +76,33 @@ public class NessUUID {
         }
         long curr = 0;
         for (int i = start; i < end; i++) {
-            byte v = CHAR_MAP[str.charAt(i)];
-            if (v == -1) {
-                throw new IllegalArgumentException("Invalid UUID string: " + str);
-            }
+            int x = getNibbleFromChar(str.charAt(i));
             curr <<= 4;
             if (curr < 0) {
                 throw new NumberFormatException("long overflow");
             }
-            curr |= v;
+            curr |= x;
         }
         return curr;
     }
 
-    private static void initCharMap(final char a, final char b, final int offset) {
-        for (int i = a; i <= b; i++) {
-            CHAR_MAP[i] = (byte) ((i - a) + offset);
+    static int getNibbleFromChar(final char c)
+    {
+        int x = c - '0';
+        if (x > 9) {
+            x -= NUM_ALPHA_DIFF; // difference between '9' and 'A'
+            if (x > 15) {
+                x -= LOWER_UPPER_DIFF; // difference between 'a' and 'A'
+            }
+            if (x < 10) {
+                throw new IllegalArgumentException(c + " is not a valid character for an UUID string");
+            }
         }
+
+        if (x < 0 || x > 15) {
+            throw new IllegalArgumentException(c + " is not a valid character for an UUID string");
+        }
+
+        return x;
     }
 }
