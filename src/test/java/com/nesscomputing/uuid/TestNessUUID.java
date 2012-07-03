@@ -198,7 +198,7 @@ public class TestNessUUID {
 			// expected
 		}
 
-		uuid = UUID.fromString("123456789-0-0-0-0");
+		uuid = NessUUID.fromString("123456789-0-0-0-0");
 		Assert.assertEquals(0x2345678900000000L, uuid.getMostSignificantBits());
 		Assert.assertEquals(0x0L, uuid.getLeastSignificantBits());
 
