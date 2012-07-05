@@ -33,57 +33,76 @@ import java.util.UUID;
 public class NessUUID {
     private NessUUID() {}
 
-    private static final byte[] CHAR_MAP = new byte[Character.MAX_VALUE];
-
-    static {
-        for (int i = 0; i < Character.MAX_VALUE; i++) {
-            CHAR_MAP[i] = -1;
-        }
-        initCharMap('a', 'f', 10);
-        initCharMap('A', 'F', 10);
-        initCharMap('0', '9', 0);
-    }
+    private static final int NUM_ALPHA_DIFF = 'A' - '9' - 1;
+    private static final int LOWER_UPPER_DIFF = 'a' - 'A';
 
     public static UUID fromString(String str) {
-        if (str.length() != 36 ||
-            str.charAt(8) != '-' ||
-            str.charAt(13) != '-' ||
-            str.charAt(18) != '-' ||
-            str.charAt(23) != '-') {
+        int dashCount = 4;
+        int [] dashPos = new int [6];
+        dashPos[0] = -1;
+        dashPos[5] = str.length();
+
+        for (int i = str.length()-1; i >= 0; i--) {
+            if (str.charAt(i) == '-') {
+                if (dashCount == 0) {
+                    throw new IllegalArgumentException("Invalid UUID string: " + str);
+                }
+                dashPos[dashCount--] = i;
+            }
+        }
+
+        if (dashCount > 0) {
             throw new IllegalArgumentException("Invalid UUID string: " + str);
         }
 
-        long mostSigBits = decode(str, 0, 8);
+        long mostSigBits = decode(str, dashPos, 0) & 0xffffffffL;
         mostSigBits <<= 16;
-        mostSigBits |= decode(str, 9, 4);
+        mostSigBits |= (decode(str, dashPos, 1) & 0xffffL);
         mostSigBits <<= 16;
-        mostSigBits |= decode(str, 14, 4);
+        mostSigBits |= (decode(str,  dashPos, 2) & 0xffffL);
 
-        long leastSigBits = decode(str, 19, 4);
+        long leastSigBits = (decode(str,  dashPos, 3) & 0xffffL);
         leastSigBits <<= 48;
-        leastSigBits |= decode(str, 24, 12);
+        leastSigBits |= (decode(str,  dashPos, 4) & 0xffffffffffffL);
 
         return new UUID(mostSigBits, leastSigBits);
     }
 
-    private static long decode(final String str, final int offset, final int length) {
-        long curr = 0;
-        for (int i = 0; i < length; i++) {
-            byte v = CHAR_MAP[str.charAt(i + offset)];
-            if (v == -1) {
-                throw new IllegalArgumentException("Invalid UUID string: " + str);
-            }
-            curr |= v;
-            curr <<= 4;
+    private static long decode(final String str, final int [] dashPos, final int field) {
+        int start = dashPos[field]+1;
+        int end = dashPos[field+1];
+        if (start >= end) {
+            throw new IllegalArgumentException("Invalid UUID string: " + str);
         }
-        // won't be enough precision for all inputs, but will be enough precision for the inputs we expect.
-        curr >>= 4;
+        long curr = 0;
+        for (int i = start; i < end; i++) {
+            int x = getNibbleFromChar(str.charAt(i));
+            curr <<= 4;
+            if (curr < 0) {
+                throw new NumberFormatException("long overflow");
+            }
+            curr |= x;
+        }
         return curr;
     }
 
-    private static void initCharMap(final char a, final char b, final int offset) {
-        for (int i = a; i <= b; i++) {
-            CHAR_MAP[i] = (byte) ((i - a) + offset);
+    static int getNibbleFromChar(final char c)
+    {
+        int x = c - '0';
+        if (x > 9) {
+            x -= NUM_ALPHA_DIFF; // difference between '9' and 'A'
+            if (x > 15) {
+                x -= LOWER_UPPER_DIFF; // difference between 'a' and 'A'
+            }
+            if (x < 10) {
+                throw new IllegalArgumentException(c + " is not a valid character for an UUID string");
+            }
         }
+
+        if (x < 0 || x > 15) {
+            throw new IllegalArgumentException(c + " is not a valid character for an UUID string");
+        }
+
+        return x;
     }
 }
