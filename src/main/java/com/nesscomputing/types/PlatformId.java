@@ -30,6 +30,7 @@ import org.codehaus.jackson.annotate.JsonValue;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.nesscomputing.uuid.NessUUID;
 
 /**
  * Typed UUID which ensures you do not mix ids of one service with another.
@@ -139,13 +140,18 @@ public final class PlatformId<T>
     @CheckForNull
     public static <T> PlatformId<T> valueOf(@Nullable final String value)
     {
-        return value == null ? null : new PlatformId<T>(UUID.fromString(value));
+        return value == null ? null : new PlatformId<T>(NessUUID.fromString(value));
     }
 
     @CheckForNull
     public static <T> PlatformId<T> fromUuid(@Nullable final UUID uuid)
     {
         return uuid == null ? null : new PlatformId<T>(uuid);
+    }
+
+    public static <T> PlatformId<T> randomId()
+    {
+        return new PlatformId<T>(UUID.randomUUID());
     }
 
     private final UUID uuid;
@@ -168,10 +174,18 @@ public final class PlatformId<T>
         return uuid.toString();
     }
 
+    /**
+     * The tostring method returns the string representation of the internal uuid.
+     *
+     * Jackson assumes that FooClass.valueOf(foo.toString()) returns an object equivalent to foo.
+     * to avoid a custom serializer, have PlatformId return the same string representation as the internal id.
+     *
+     * Still, calling {@link PlatformId.getValue()} is much preferred over {@link PlatformId.toString()}.
+     */
     @Override
     public String toString()
     {
-        return "PlatformId [uuid=" + uuid + "]";
+        return getValue();
     }
 
     @Override
