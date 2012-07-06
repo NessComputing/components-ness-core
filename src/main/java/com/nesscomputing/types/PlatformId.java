@@ -31,6 +31,8 @@ import org.codehaus.jackson.annotate.JsonValue;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
+import com.nesscomputing.uuid.NessUUID;
+
 /**
  * Typed UUID which ensures you do not mix ids of one service with another.
  *
@@ -139,7 +141,7 @@ public final class PlatformId<T>
     @CheckForNull
     public static <T> PlatformId<T> valueOf(@Nullable final String value)
     {
-        return value == null ? null : new PlatformId<T>(UUID.fromString(value));
+        return value == null ? null : new PlatformId<T>(NessUUID.fromString(value));
     }
 
     @CheckForNull
