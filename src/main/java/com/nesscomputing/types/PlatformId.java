@@ -149,6 +149,11 @@ public final class PlatformId<T>
         return uuid == null ? null : new PlatformId<T>(uuid);
     }
 
+    public static <T> PlatformId<T> randomId()
+    {
+        return new PlatformId<T>(UUID.randomUUID());
+    }
+
     private final UUID uuid;
 
     private PlatformId(@Nonnull final UUID uuid)
