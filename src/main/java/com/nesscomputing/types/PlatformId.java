@@ -30,7 +30,6 @@ import org.codehaus.jackson.annotate.JsonValue;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-
 import com.nesscomputing.uuid.NessUUID;
 
 /**
@@ -170,10 +169,18 @@ public final class PlatformId<T>
         return uuid.toString();
     }
 
+    /**
+     * The tostring method returns the string representation of the internal uuid.
+     *
+     * Jackson assumes that FooClass.valueOf(foo.toString()) returns an object equivalent to foo.
+     * to avoid a custom serializer, have PlatformId return the same string representation as the internal id.
+     *
+     * Still, calling {@link PlatformId.getValue()} is much preferred over {@link PlatformId.toString()}.
+     */
     @Override
     public String toString()
     {
-        return "PlatformId [uuid=" + uuid + "]";
+        return getValue();
     }
 
     @Override
