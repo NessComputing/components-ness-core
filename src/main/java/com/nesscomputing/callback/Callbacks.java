@@ -18,11 +18,15 @@ package com.nesscomputing.callback;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Throwables;
@@ -33,6 +37,7 @@ import com.mogwee.executors.Executors;
  * Callback helper methods
  */
 public class Callbacks {
+    private static final Logger LOG = LoggerFactory.getLogger(Callbacks.class);
     private static final int POISON_PILL_GIVEUP_MS = 10;
     private static final int CHILD_DEATH_POLL_INTERVAL_MS = 1000;
 
@@ -86,7 +91,7 @@ public class Callbacks {
             final String pipeName)
     throws InterruptedException
     {
-        final SynchronousQueue<T> queue = new SynchronousQueue<T>();
+        final BlockingQueue<T> queue = new SynchronousQueue<T>();
 
         @SuppressWarnings("unchecked") // Used only for == checks
         final T poisonPill = (T) new Object();
@@ -94,26 +99,21 @@ public class Callbacks {
         final ExecutorService pipe = Executors.newSingleThreadExecutor(pipeName);
 
         // Set when the child thread exits
-        final AtomicBoolean childThreadAborted = new AtomicBoolean();
+        final Future<?> childThread;
 
         // Thrown as a marker from the callback if the child thread unexpectedly exits
         final Exception childTerminated = new Exception();
 
         try {
-            pipe.submit(new Callable<Void>() {
+            childThread = pipe.submit(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception
                 {
-                    try {
-                        // Read items off of the queue until we see the poison pill
-                        QueueIterator<T> iterator = new QueueIterator<T>(queue, poisonPill);
-                        intoCallback.call(iterator);
-                        Iterators.getLast(iterator); // Consume the rest of the iterator, in case the callback returns early
-                        return null;
-                    } finally
-                    {
-                        childThreadAborted.set(true);
-                    }
+                    // Read items off of the queue until we see the poison pill
+                    QueueIterator<T> iterator = new QueueIterator<T>(queue, poisonPill);
+                    intoCallback.call(iterator);
+                    Iterators.getLast(iterator); // Consume the rest of the iterator, in case the callback returns early
+                    return null;
                 }
             });
         } finally { // Ensure we always shutdown the service so that we never leak threads
@@ -129,7 +129,7 @@ public class Callbacks {
                     // Check periodically if the child thread is dead, and give up
                     while (!queue.offer(item, CHILD_DEATH_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS))
                     {
-                        if (childThreadAborted.get())
+                        if (childThread.isDone())
                         {
                             throw childTerminated;
                         }
@@ -148,9 +148,10 @@ public class Callbacks {
         } finally {
             try
             {
-                if (!childThreadAborted.get())
+                if (!childThread.isDone() &&
+                    !queue.offer(poisonPill, POISON_PILL_GIVEUP_MS, TimeUnit.MILLISECONDS))
                 {
-                    queue.offer(poisonPill, POISON_PILL_GIVEUP_MS, TimeUnit.MILLISECONDS);
+                    LOG.warn("Could not offer poison pill for \"%s\"", pipeName);
                 }
             } catch (InterruptedException e)
             {
@@ -168,11 +169,11 @@ public class Callbacks {
      */
     private static class QueueIterator<T> implements Iterator<T>
     {
-        private SynchronousQueue<T> queue;
+        private BlockingQueue<T> queue;
         private T element;
         private T poisonPill;
 
-        QueueIterator(SynchronousQueue<T> queue, T poisonPill)
+        QueueIterator(BlockingQueue<T> queue, T poisonPill)
         {
             this.queue = queue;
             this.poisonPill = poisonPill;
