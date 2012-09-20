@@ -15,6 +15,15 @@
  */
 package com.nesscomputing.callback;
 
-public interface Callback<T> {
+public interface Callback<T>
+{
+    /**
+     * Process a single item.
+     *
+     * An implementation of this interface can throw {@link CallbackRefusedException} to signal the caller
+     * that it should stop executing the callback.
+     *
+     * @throws Exception
+     */
     void call(T item) throws Exception;
 }
