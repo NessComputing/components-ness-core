@@ -22,6 +22,10 @@
   <packaging>jar</packaging>
   <description>Ness base types component</description>
 
+  <properties>
+    <dep.jackson.version>1.9.9</dep.jackson.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -41,7 +45,7 @@
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-core-asl</artifactId>
-      <version>1.9.7</version>
+      <version>${dep.jackson.version}</version>
     </dependency>
 
     <dependency>
