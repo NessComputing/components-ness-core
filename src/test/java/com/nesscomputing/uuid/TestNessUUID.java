@@ -72,10 +72,16 @@ public class TestNessUUID {
     }
 
     @Test
-    public void testSimplePatternToString()
+    public void testSimpleToString()
     {
-        String uuid = "01234567-89ab-cdef-0000-0123456789ab";
-        Assert.assertEquals(uuid, NessUUID.toString(UUID.fromString(uuid)));
+        String[] uuids = new String[] {
+                "01234567-89ab-cdef-0000-0123456789ab",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                "00000000-0000-0000-0000-000000000000"
+        };
+        for (String uuid : uuids) {
+            Assert.assertEquals(uuid, NessUUID.toString(UUID.fromString(uuid)));
+        }
     }
 
     @Test
