@@ -71,6 +71,27 @@ public class TestNessUUID {
         testEx(invalid6);
     }
 
+    @Test
+    public void testSimplePatternToString()
+    {
+        String uuid = "01234567-89ab-cdef-0000-0123456789ab";
+        Assert.assertEquals(uuid, NessUUID.toString(UUID.fromString(uuid)));
+    }
+
+    @Test
+    public void test100ToString()
+    {
+        final long PRIME = 514229;
+        for (long msb = 0; msb < 10; msb++)
+        {
+            for (long lsb = msb; lsb < msb + 10; lsb++)
+            {
+                UUID uuid = new UUID(msb * PRIME, lsb * PRIME * PRIME);
+                Assert.assertEquals(uuid.toString(), NessUUID.toString(uuid));
+            }
+        }
+    }
+
     // makes testing multiple exceptions less verbose
     private void testEx(String str) {
         try {
@@ -240,4 +261,15 @@ public class TestNessUUID {
 			// expected
 		}
 	}
+
+    @Test
+    public void test_toString() {
+        UUID uuid = new UUID(0xf81d4fae7dec11d0L, 0xa76500a0c91e6bf6L);
+        String actual = NessUUID.toString(uuid);
+        Assert.assertEquals("f81d4fae-7dec-11d0-a765-00a0c91e6bf6", actual);
+
+        uuid = new UUID(0x0000000000001000L, 0x8000000000000000L);
+        actual = NessUUID.toString(uuid);
+        Assert.assertEquals("00000000-0000-1000-8000-000000000000", actual);
+    }
 }

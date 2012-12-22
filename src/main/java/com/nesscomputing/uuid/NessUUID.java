@@ -17,17 +17,15 @@ package com.nesscomputing.uuid;
 
 import java.util.UUID;
 
-
 /**
  * A class that provides an alternate implementation of {@link
- * java.util.UUID#fromString(String)}.
+ * UUID#fromString(String)} and {@link UUID#toString()}.
  *
- * <p> The version in the JDK uses {@link java.lang.String#split(String)}
+ * <p> The version in the JDK uses {@link String#split(String)}
  * which does not compile the regular expression that is used for splitting
  * the UUID string and results in the allocation of multiple strings in a
  * string array. We decided to write {@link NessUUID} when we ran into
- * performance issues with the garbage produced by {@link
- * java.util.UUID#fromString(String)}.
+ * performance issues with the garbage produced by the JDK class.
  *
  */
 public class NessUUID {
@@ -35,6 +33,8 @@ public class NessUUID {
 
     private static final int NUM_ALPHA_DIFF = 'A' - '9' - 1;
     private static final int LOWER_UPPER_DIFF = 'a' - 'A';
+
+    // FROM STRING
 
     public static UUID fromString(String str) {
         int dashCount = 4;
@@ -104,5 +104,51 @@ public class NessUUID {
         }
 
         return x;
+    }
+
+    // TO STRING
+
+    public static String toString(UUID uuid)
+    {
+        return toString(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+    }
+
+    /** Roughly patterned (read: stolen) from java.util.UUID and java.lang.Long. */
+    public static String toString(long msb, long lsb)
+    {
+        char[] uuidChars = new char[36];
+
+        digits(uuidChars, 0, 8, msb >> 32);
+        uuidChars[8] = '-';
+        digits(uuidChars, 9, 4, msb >> 16);
+        uuidChars[13] = '-';
+        digits(uuidChars, 14, 4, msb);
+        uuidChars[18] = '-';
+        digits(uuidChars, 19, 4, lsb >> 48);
+        uuidChars[23] = '-';
+        digits(uuidChars, 24, 12, lsb);
+
+        return new String(uuidChars);
+    }
+
+    private static void digits(char[] dest, int offset, int digits, long val) {
+        long hi = 1L << (digits * 4);
+        toUnsignedString(dest, offset, digits, hi | (val & (hi - 1)), 4);
+    }
+
+    private final static char[] DIGITS = {
+        '0' , '1' , '2' , '3' , '4' , '5' ,
+        '6' , '7' , '8' , '9' , 'a' , 'b' ,
+        'c' , 'd' , 'e' , 'f'
+    };
+
+    private static void toUnsignedString(char[] dest, int offset, int len, long i, int shift) {
+        int charPos = len;
+        int radix = 1 << shift;
+        long mask = radix - 1;
+        do {
+            dest[offset + --charPos] = DIGITS[(int)(i & mask)];
+            i >>>= shift;
+        } while (i != 0 && charPos > 0);
     }
 }
