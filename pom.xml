@@ -19,7 +19,7 @@
   <groupId>com.nesscomputing.components</groupId>
   <artifactId>ness-core</artifactId>
   <name>ness-core</name>
-  <version>1.5.1-SNAPSHOT</version>
+  <version>1.6.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Ness base types component</description>
 

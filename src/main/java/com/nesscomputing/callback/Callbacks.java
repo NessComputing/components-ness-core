@@ -29,4 +29,24 @@ public class Callbacks {
             callback.call(item);
         }
     }
+
+    /**
+     * A callback that does nothing.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Callback<T> noop()
+    {
+        return (Callback<T>) NOOP;
+    }
+
+    /**
+     * A callback that does nothing.
+     */
+    public static final Callback<Object> NOOP = new NoopCallback();
+
+    private static class NoopCallback implements Callback<Object>
+    {
+        @Override
+        public void call(Object item) throws Exception { }
+    }
 }
