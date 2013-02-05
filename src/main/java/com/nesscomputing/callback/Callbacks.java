@@ -15,6 +15,8 @@
  */
 package com.nesscomputing.callback;
 
+import java.util.Arrays;
+
 /**
  * Callback helper methods
  */
@@ -48,5 +50,40 @@ public class Callbacks {
     {
         @Override
         public void call(Object item) throws Exception { }
+    }
+
+    /**
+     * Combine multiple callbacks into a single callback, preserving order.
+     */
+    @SafeVarargs
+    public static <T> Callback<T> chain(Callback<T>... callbacks)
+    {
+        return chain(Arrays.asList(callbacks));
+    }
+
+    /**
+     * Combine multiple callbacks into a single callback, preserving order.
+     */
+    public static <T> Callback<T> chain(Iterable<Callback<T>> callbacks)
+    {
+        return new ChainCallback<T>(callbacks);
+    }
+
+    private static class ChainCallback<T> implements Callback<T>
+    {
+        private final Iterable<Callback<T>> callbacks;
+
+        public ChainCallback(Iterable<Callback<T>> callbacks)
+        {
+            this.callbacks = callbacks;
+        }
+
+        @Override
+        public void call(T item) throws Exception
+        {
+            for (Callback<T> callback : callbacks) {
+                callback.call(item);
+            }
+        }
     }
 }
