@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Ness Computing, Inc.
+ * Copyright (C) 2013 Ness Computing, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,27 @@ public class Callbacks {
     private Callbacks() { }
 
     /**
-     * For every element in the iterable, invoke the given callback.
+     * For every element, invoke the given callback.
+     * Stops if {@link CallbackRefusedException} is thrown.
      */
-    public static <T> void stream(Callback<T> callback, Iterable<T> iterable) throws Exception {
+    @SafeVarargs
+    public static <T> void stream(Callback<T> callback, T... items) throws Exception
+    {
+        stream(callback, Arrays.asList(items));
+    }
+
+    /**
+     * For every element in the iterable, invoke the given callback.
+     * Stops if {@link CallbackRefusedException} is thrown.
+     */
+    public static <T> void stream(Callback<T> callback, Iterable<T> iterable) throws Exception
+    {
         for (T item : iterable) {
-            callback.call(item);
+            try {
+                callback.call(item);
+            } catch (CallbackRefusedException e) {
+                return;
+            }
         }
     }
 
