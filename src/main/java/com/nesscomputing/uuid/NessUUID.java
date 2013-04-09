@@ -38,7 +38,7 @@ public class NessUUID {
 
     public static UUID fromString(String str) {
         int dashCount = 4;
-        int [] dashPos = new int [6];
+        final int [] dashPos = new int [6];
         dashPos[0] = -1;
         dashPos[5] = str.length();
 
@@ -69,14 +69,14 @@ public class NessUUID {
     }
 
     private static long decode(final String str, final int [] dashPos, final int field) {
-        int start = dashPos[field]+1;
-        int end = dashPos[field+1];
+        final int start = dashPos[field]+1;
+        final int end = dashPos[field+1];
         if (start >= end) {
             throw new IllegalArgumentException("Invalid UUID string: " + str);
         }
         long curr = 0;
         for (int i = start; i < end; i++) {
-            int x = getNibbleFromChar(str.charAt(i));
+            final int x = getNibbleFromChar(str.charAt(i));
             curr <<= 4;
             if (curr < 0) {
                 throw new NumberFormatException("long overflow");
@@ -116,7 +116,7 @@ public class NessUUID {
     /** Roughly patterned (read: stolen) from java.util.UUID and java.lang.Long. */
     public static String toString(long msb, long lsb)
     {
-        char[] uuidChars = new char[36];
+        final char[] uuidChars = new char[36];
 
         digits(uuidChars, 0, 8, msb >> 32);
         uuidChars[8] = '-';
@@ -132,7 +132,7 @@ public class NessUUID {
     }
 
     private static void digits(char[] dest, int offset, int digits, long val) {
-        long hi = 1L << (digits * 4);
+        final long hi = 1L << (digits * 4);
         toUnsignedString(dest, offset, digits, hi | (val & (hi - 1)), 4);
     }
 
@@ -144,8 +144,8 @@ public class NessUUID {
 
     private static void toUnsignedString(char[] dest, int offset, int len, long i, int shift) {
         int charPos = len;
-        int radix = 1 << shift;
-        long mask = radix - 1;
+        final int radix = 1 << shift;
+        final long mask = radix - 1;
         do {
             dest[offset + --charPos] = DIGITS[(int)(i & mask)];
             i >>>= shift;
