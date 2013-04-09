@@ -37,42 +37,47 @@ public class NessUUID {
     // FROM STRING
 
     public static UUID fromString(String str) {
-        int dashCount = 4;
-        final int [] dashPos = new int [6];
-        dashPos[0] = -1;
-        dashPos[5] = str.length();
+        try {
+            int dashCount = 4;
+            final int [] dashPos = new int [6];
+            dashPos[0] = -1;
+            dashPos[5] = str.length();
 
-        for (int i = str.length()-1; i >= 0; i--) {
-            if (str.charAt(i) == '-') {
-                if (dashCount == 0) {
-                    throw new IllegalArgumentException("Invalid UUID string: " + str);
+            for (int i = str.length()-1; i >= 0; i--) {
+                if (str.charAt(i) == '-') {
+                    if (dashCount == 0) {
+                        throw new IllegalArgumentException("Too many dashes (-)");
+                    }
+                    dashPos[dashCount--] = i;
                 }
-                dashPos[dashCount--] = i;
             }
+
+            if (dashCount > 0) {
+                throw new IllegalArgumentException("Not enough dashes (-)");
+            }
+
+            long mostSigBits = decode(str, dashPos, 0) & 0xffffffffL;
+            mostSigBits <<= 16;
+            mostSigBits |= (decode(str, dashPos, 1) & 0xffffL);
+            mostSigBits <<= 16;
+            mostSigBits |= (decode(str,  dashPos, 2) & 0xffffL);
+
+            long leastSigBits = (decode(str,  dashPos, 3) & 0xffffL);
+            leastSigBits <<= 48;
+            leastSigBits |= (decode(str,  dashPos, 4) & 0xffffffffffffL);
+
+            return new UUID(mostSigBits, leastSigBits);
         }
-
-        if (dashCount > 0) {
-            throw new IllegalArgumentException("Invalid UUID string: " + str);
+        catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid UUID string: " + str, e);
         }
-
-        long mostSigBits = decode(str, dashPos, 0) & 0xffffffffL;
-        mostSigBits <<= 16;
-        mostSigBits |= (decode(str, dashPos, 1) & 0xffffL);
-        mostSigBits <<= 16;
-        mostSigBits |= (decode(str,  dashPos, 2) & 0xffffL);
-
-        long leastSigBits = (decode(str,  dashPos, 3) & 0xffffL);
-        leastSigBits <<= 48;
-        leastSigBits |= (decode(str,  dashPos, 4) & 0xffffffffffffL);
-
-        return new UUID(mostSigBits, leastSigBits);
     }
 
     private static long decode(final String str, final int [] dashPos, final int field) {
         final int start = dashPos[field]+1;
         final int end = dashPos[field+1];
         if (start >= end) {
-            throw new IllegalArgumentException("Invalid UUID string: " + str);
+            throw new IllegalArgumentException(String.format("In call to decode(), start (%d) >= end (%d)", start, end));
         }
         long curr = 0;
         for (int i = start; i < end; i++) {
