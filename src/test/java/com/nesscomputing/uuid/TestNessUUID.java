@@ -239,9 +239,9 @@ public class TestNessUUID {
 
 		try {
 			uuid = NessUUID.fromString("8000000000000000-0-0-0-0");
-			Assert.fail("should throw NumberFormatException");
-		} catch (NumberFormatException e) {
-			// expected
+			Assert.fail("should throw IllegalArgumentException that contains NumberFormatException");
+		} catch (IllegalArgumentException e) {
+			Assert.assertTrue(e.getCause() != null && e.getCause() instanceof NumberFormatException);
 		}
 
 		uuid = UUID
@@ -255,17 +255,17 @@ public class TestNessUUID {
 
 		try {
 			uuid = NessUUID.fromString("0-0-0-8000000000000000-0");
-			Assert.fail("should throw NumberFormatException");
-		} catch (NumberFormatException e) {
-			// expected
-		}
+            Assert.fail("should throw IllegalArgumentException that contains NumberFormatException");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getCause() != null && e.getCause() instanceof NumberFormatException);
+        }
 
 		try {
 			uuid = NessUUID.fromString("0-0-0-0-8000000000000000");
-			Assert.fail("should throw NumberFormatException");
-		} catch (NumberFormatException e) {
-			// expected
-		}
+            Assert.fail("should throw IllegalArgumentException that contains NumberFormatException");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getCause() != null && e.getCause() instanceof NumberFormatException);
+        }
 	}
 
     @Test
