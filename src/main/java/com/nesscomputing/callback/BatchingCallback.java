@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Collect incoming items into batches of a fixed size, and invoke
@@ -39,7 +40,7 @@ public class BatchingCallback<T> implements Callback<T>, Closeable
     private final Callback<? super List<T>> out;
     private final int size;
 
-    private BatchingCallback(int size, Callback<? super List<T>> out)
+    BatchingCallback(int size, Callback<? super List<T>> out)
     {
         if (size <= 0) {
             throw new IllegalArgumentException("Size must be positive, was " + size);
@@ -59,6 +60,18 @@ public class BatchingCallback<T> implements Callback<T>, Closeable
     public static <T> BatchingCallback<T> batchInto(int size, Callback<? super List<T>> out)
     {
         return new BatchingCallback<T>(size, out);
+    }
+
+    /**
+     * Collect {@code <T>} into a buffer, and schedule the given callback with the given executor
+     * whenever the buffer is full.  If failFast is false and any exceptions are thrown, a
+     * {@link BatchingCallbackExecutionException} is thrown when the BatchingCallback is {@link #commit()}ed.
+     * It suppresses all of the other thrown exceptions.  If failFast is true and an exception is thrown, it
+     * is rethrown as soon as it is noticed and further invocations will generate {@link CallbackRefusedException}.
+     */
+    public static <T> BatchingCallback<T> batchInto(int size, ExecutorService executor, Callback<? super List<T>> out, boolean failFast)
+    {
+        return new ExecutorBatchingCallback<T>(size, executor, out, failFast);
     }
 
     /**
@@ -94,6 +107,11 @@ public class BatchingCallback<T> implements Callback<T>, Closeable
         } catch (CallbackRefusedException e) {
             return false;
         }
+    }
+
+    Callback<? super List<T>> getOut()
+    {
+        return out;
     }
 
     private void commitInternal() throws CallbackRefusedException
