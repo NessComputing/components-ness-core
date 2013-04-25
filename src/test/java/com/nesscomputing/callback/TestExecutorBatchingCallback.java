@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.MoreExecutors;
 
@@ -126,6 +127,27 @@ public class TestExecutorBatchingCallback
             batcher.call("f");
             fail();
         } catch (CallbackRefusedException e) {
+        }
+    }
+
+    @Test(expected=BatchingCallbackExecutionException.class)
+    public void testSingleExceptionFails() throws Exception
+    {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Callback<List<String>> out = new Callback<List<String>>() {
+                @Override
+                public void call(List<String> item) throws Exception
+                {
+                    Thread.sleep(10);
+                    throw new IllegalStateException("boom!");
+                }
+            };
+            BatchingCallback<String> batcher = BatchingCallback.batchInto(2, executor, out, true);
+            batcher.call("a");
+            batcher.close();
+        } finally {
+            executor.shutdownNow();
         }
     }
 }
