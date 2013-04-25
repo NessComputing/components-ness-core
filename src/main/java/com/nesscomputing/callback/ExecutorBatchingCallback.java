@@ -85,7 +85,7 @@ class ExecutorBatchingCallback<T> extends BatchingCallback<T>
 
         public void close()
         {
-            while (inFlight.decrementAndGet() > 0) {
+            while (inFlight.decrementAndGet() >= 0) {
                 try {
                     executor.take().get();
                 } catch (InterruptedException e) {
