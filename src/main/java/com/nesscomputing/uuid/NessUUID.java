@@ -17,6 +17,8 @@ package com.nesscomputing.uuid;
 
 import java.util.UUID;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * A class that provides an alternate implementation of {@link
  * UUID#fromString(String)} and {@link UUID#toString()}.
@@ -28,7 +30,7 @@ import java.util.UUID;
  * performance issues with the garbage produced by the JDK class.
  *
  */
-public class NessUUID {
+public final class NessUUID {
     private NessUUID() {}
 
     private static final int NUM_ALPHA_DIFF = 'A' - '9' - 1;
@@ -73,20 +75,22 @@ public class NessUUID {
         }
     }
 
-    private static long decode(final String str, final int [] dashPos, final int field) {
+    @VisibleForTesting
+    static long decode(final String str, final int [] dashPos, final int field) {
         final int start = dashPos[field]+1;
         final int end = dashPos[field+1];
         if (start >= end) {
             throw new IllegalArgumentException(String.format("In call to decode(), start (%d) >= end (%d)", start, end));
         }
+        // at most 16 nibbles are allowed (64 bits)
+        else if (end - start > 16) {
+            throw new NumberFormatException("long overflow");
+        }
+
         long curr = 0;
         for (int i = start; i < end; i++) {
-            final int x = getNibbleFromChar(str.charAt(i));
             curr <<= 4;
-            if (curr < 0) {
-                throw new NumberFormatException("long overflow");
-            }
-            curr |= x;
+            curr |= getNibbleFromChar(str.charAt(i));
         }
         return curr;
     }
@@ -147,10 +151,11 @@ public class NessUUID {
         'c' , 'd' , 'e' , 'f'
     };
 
-    private static void toUnsignedString(char[] dest, int offset, int len, long i, int shift) {
+    private static void toUnsignedString(final char[] dest, final int offset, final int len, final long value, final int shift) {
         int charPos = len;
         final int radix = 1 << shift;
         final long mask = radix - 1;
+        long i = value;
         do {
             dest[offset + --charPos] = DIGITS[(int)(i & mask)];
             i >>>= shift;
