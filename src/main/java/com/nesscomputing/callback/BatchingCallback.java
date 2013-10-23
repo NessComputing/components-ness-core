@@ -22,6 +22,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
+import com.google.common.base.Throwables;
+
 /**
  * Collect incoming items into batches of a fixed size, and invoke
  * a delegate callback whenever a complete batch is available.
@@ -121,10 +123,9 @@ public class BatchingCallback<T> implements Callback<T>, Closeable
         if (!outList.isEmpty()) {
             try {
                 out.call(outList);
-            } catch (final CallbackRefusedException | RuntimeException e) {
-                throw e;
             } catch (final Exception e) {
-                throw new RuntimeException(e);
+                Throwables.propagateIfInstanceOf(e, CallbackRefusedException.class);
+                throw Throwables.propagate(e);
             }
         }
     }
