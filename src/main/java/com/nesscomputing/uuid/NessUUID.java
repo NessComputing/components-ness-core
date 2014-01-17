@@ -15,9 +15,15 @@
  */
 package com.nesscomputing.uuid;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.util.UUID;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 /**
  * A class that provides an alternate implementation of {@link
@@ -32,6 +38,8 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public final class NessUUID {
     private NessUUID() {}
+
+    private static final MethodHandle STRING_FACTORY;
 
     private static final int NUM_ALPHA_DIFF = 'A' - '9' - 1;
     private static final int LOWER_UPPER_DIFF = 'a' - 'A';
@@ -137,7 +145,11 @@ public final class NessUUID {
         uuidChars[23] = '-';
         digits(uuidChars, 24, 12, lsb);
 
-        return new String(uuidChars);
+        try {
+            return (String) STRING_FACTORY.invokeExact(uuidChars);
+        } catch (Throwable e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private static void digits(char[] dest, int offset, int digits, long val) {
@@ -160,5 +172,42 @@ public final class NessUUID {
             dest[offset + --charPos] = DIGITS[(int)(i & mask)];
             i >>>= shift;
         } while (i != 0 && charPos > 0);
+    }
+
+    static {
+        Constructor<String> constructor = null;
+
+        try {
+            constructor = String.class.getDeclaredConstructor(char[].class, boolean.class);
+            constructor.setAccessible(true);
+        } catch (NoSuchMethodException | SecurityException e) { // NOPMD
+            e.printStackTrace(); // NOPMD logging may not be available in static constructor of ness-core
+        }
+
+        MethodHandle factory;
+        try {
+            factory = MethodHandles.lookup().findConstructor(String.class, MethodType.methodType(void.class, char[].class));
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+        if (constructor != null) {
+            try {
+                final MethodHandle fastFactory = MethodHandles.insertArguments(
+                        MethodHandles.lookup().unreflectConstructor(constructor),
+                        1, true);
+
+                final char[] unsharedChars = "test".toCharArray();
+                String testString = (String) fastFactory.invokeExact(unsharedChars);
+                Preconditions.checkState("test".equals(testString));
+
+                unsharedChars[0] = 'r';
+                Preconditions.checkState("rest".equals(testString)); // :O
+
+                factory = fastFactory;
+            } catch (Throwable e) { // NOPMD
+                e.printStackTrace(); // NOPMD logging may not be available in static constructor of ness-core
+            }
+        }
+        STRING_FACTORY = factory;
     }
 }
