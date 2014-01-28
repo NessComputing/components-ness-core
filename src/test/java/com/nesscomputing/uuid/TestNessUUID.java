@@ -254,14 +254,14 @@ public class TestNessUUID {
         Assert.assertEquals(0xffffffffffffffffL, uuid.getLeastSignificantBits());
 
         try {
-            uuid = NessUUID.fromString("0-0-0-80000000000000000-0");
+            NessUUID.fromString("0-0-0-80000000000000000-0");
             Assert.fail("should throw IllegalArgumentException that contains NumberFormatException");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getCause() != null && e.getCause() instanceof NumberFormatException);
         }
 
         try {
-            uuid = NessUUID.fromString("0-0-0-0-80000000000000000");
+            NessUUID.fromString("0-0-0-0-80000000000000000");
             Assert.fail("should throw IllegalArgumentException that contains NumberFormatException");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getCause() != null && e.getCause() instanceof NumberFormatException);

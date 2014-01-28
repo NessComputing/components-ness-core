@@ -17,6 +17,8 @@ package com.nesscomputing.callback;
 
 import java.util.Arrays;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Callback helper methods
  */
@@ -37,6 +39,7 @@ public class Callbacks {
      * For every element in the iterable, invoke the given callback.
      * Stops if {@link CallbackRefusedException} is thrown.
      */
+    @SuppressFBWarnings("BAD_PRACTICE")
     public static <T> void stream(Callback<T> callback, Iterable<T> iterable) throws Exception
     {
         for (T item : iterable) {

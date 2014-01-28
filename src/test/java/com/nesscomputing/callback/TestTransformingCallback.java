@@ -16,6 +16,7 @@
 package com.nesscomputing.callback;
 
 import static com.nesscomputing.callback.TransformedCallback.transform;
+
 import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Nullable;

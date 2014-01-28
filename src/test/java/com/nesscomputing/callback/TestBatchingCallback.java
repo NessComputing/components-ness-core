@@ -16,6 +16,7 @@
 package com.nesscomputing.callback;
 
 import static com.google.common.collect.ImmutableList.of;
+
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;

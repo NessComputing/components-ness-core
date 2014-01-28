@@ -5,28 +5,20 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.nesscomputing</groupId>
-    <artifactId>ness-oss-parent</artifactId>
-    <version>29</version>
+    <artifactId>ness-root</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-
-  <scm>
-    <connection>scm:git:git://github.com/NessComputing/components-ness-core.git</connection>
-    <developerConnection>scm:git:git@github.com:NessComputing/components-ness-core.git</developerConnection>
-    <url>http://github.com/NessComputing/components-ness-core</url>
-    <tag>HEAD</tag>
-  </scm>
 
   <groupId>com.nesscomputing.components</groupId>
   <artifactId>ness-core</artifactId>
   <name>ness-core</name>
-  <version>1.9.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Ness base types component</description>
 
   <dependencies>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
+      <artifactId>annotations</artifactId>
     </dependency>
 
     <dependency>
@@ -38,7 +30,6 @@
     <dependency>
       <groupId>com.google.caliper</groupId>
       <artifactId>caliper</artifactId>
-      <version>0.5-rc1</version>
       <scope>test</scope>
     </dependency>
 
